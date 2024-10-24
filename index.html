@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de Arquivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .upload-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-input-container {
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .file-label:hover {
+            background-color: #2563eb;
+        }
+
+        .selected-file {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .upload-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-button:hover {
+            background-color: #2563eb;
+        }
+
+        .upload-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .status-success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .api-response {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        .api-response h2 {
+            font-size: 1rem;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .api-response pre {
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #4a5568;
+            margin: 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <div class="header">
+            <h1>Upload SheinBox</h1>
+        </div>
+        
+        <div class="file-input-container">
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
+            <label for="fileInput" class="file-label">Escolher arquivo</label>
+            <div id="selectedFile" class="selected-file"></div>
+        </div>
+
+        <button id="uploadButton" class="upload-button" disabled>
+            <div id="spinner" class="spinner"></div>
+            <span id="buttonText">Enviar Arquivo</span>
+        </button>
+
+        <div id="statusMessage" class="status-message" style="display: none;"></div>
+
+        <div id="apiResponse" class="api-response" style="display: none;">
+            <h2>Resposta da API:</h2>
+            <pre id="apiResponseContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const selectedFile = document.getElementById('selectedFile');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusMessage = document.getElementById('statusMessage');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('buttonText');
+        const apiResponse = document.getElementById('apiResponse');
+        const apiResponseContent = document.getElementById('apiResponseContent');
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile.textContent = `Arquivo selecionado: ${file.name}`;
+                uploadButton.disabled = false;
+                statusMessage.style.display = 'none';
+                apiResponse.style.display = 'none';
+            } else {
+                selectedFile.textContent = '';
+                uploadButton.disabled = true;
+            }
+        });
+
+        uploadButton.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Mostrar loading
+            uploadButton.disabled = true;
+            spinner.style.display = 'block';
+            buttonText.textContent = 'Enviando...';
+            statusMessage.style.display = 'none';
+            apiResponse.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('https://cct.connectedcontroltower.com.br/api/SheinBox/upload', {
+                    method: 'POST',
+                    headers: {
+                        'accept': '*/*'
+                    },
+                    body: formData
+                });
+
+                statusMessage.style.display = 'block';
+                
+                // Tenta ler a resposta como JSON primeiro
+                let responseData;
+                const responseText = await response.text();
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = responseText;
+                }
+
+                // Mostra a resposta da API
+                apiResponse.style.display = 'block';
+                apiResponseContent.textContent = typeof responseData === 'object' 
+                    ? JSON.stringify(responseData, null, 2) 
+                    : responseData;
+                
+                if (response.ok) {
+                    statusMessage.textContent = 'Arquivo enviado com sucesso!';
+                    statusMessage.className = 'status-message status-success';
+                    fileInput.value = '';
+                    selectedFile.textContent = '';
+                } else {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusMessage.textContent = `Erro ao enviar arquivo: ${error.message}`;
+                statusMessage.className = 'status-message status-error';
+            } finally {
+                // Resetar estado do botão
+                uploadButton.disabled = !fileInput.files.length;
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Enviar Arquivo';
+            }
+        });
+    </script>
+</body>
+</html>
