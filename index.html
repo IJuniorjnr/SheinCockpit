@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Arquivo</title>
+    <title>Upload de Arquivo - SHEIN</title>
     <style>
         * {
             margin: 0;
@@ -39,6 +39,34 @@
             color: #1a1a1a;
             font-size: 1.5rem;
             margin-bottom: 0.5rem;
+        }
+
+        .endpoint-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            background-color: white;
+            font-size: 0.875rem;
+            color: #1a1a1a;
+            cursor: pointer;
+        }
+
+        .endpoint-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .endpoint-info {
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
         }
 
         .file-input-container {
@@ -153,7 +181,23 @@
 <body>
     <div class="upload-container">
         <div class="header">
-            <h1>Upload SheinBox</h1>
+            <h1>Upload de Arquivo - SHEIN</h1>
+        </div>
+
+        <select id="endpointSelect" class="endpoint-select">
+            <option value="SheinBox">SheinBox</option>
+            <option value="SheinFirstMile">SheinFirstMile</option>
+            <option value="SheinReceipt">SheinReceipt</option>
+            <option value="SheinShipment">SheinShipment</option>
+            <option value="SheinSorter">SheinSorter</option>
+            <option value="SheinToBeShipment">SheinToBeShipment</option>
+            <option value="SheinLabelInbound">SheinLabelInbound</option>
+            <option value="SheinLabelOutbound">SheinLabelOutbound</option>
+            <option value="SheinMiddleMile">SheinMiddleMile</option>
+        </select>
+
+        <div id="endpointInfo" class="endpoint-info">
+            Endpoint selecionado: https://cct.connectedcontroltower.com.br/api/SheinBox/upload
         </div>
         
         <div class="file-input-container">
@@ -184,6 +228,18 @@
         const buttonText = document.getElementById('buttonText');
         const apiResponse = document.getElementById('apiResponse');
         const apiResponseContent = document.getElementById('apiResponseContent');
+        const endpointSelect = document.getElementById('endpointSelect');
+        const endpointInfo = document.getElementById('endpointInfo');
+
+        // Base URL da API
+        const baseUrl = 'https://cct.connectedcontroltower.com.br/api/';
+
+        // Atualiza a informação do endpoint quando o select muda
+        endpointSelect.addEventListener('change', () => {
+            const selectedEndpoint = endpointSelect.value;
+            const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
+            endpointInfo.textContent = `Endpoint selecionado: ${fullUrl}`;
+        });
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -212,8 +268,12 @@
             const formData = new FormData();
             formData.append('file', file);
 
+            // Pegar o endpoint selecionado
+            const selectedEndpoint = endpointSelect.value;
+            const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
+
             try {
-                const response = await fetch('https://cct.connectedcontroltower.com.br/api/SheinBox/upload', {
+                const response = await fetch(fullUrl, {
                     method: 'POST',
                     headers: {
                         'accept': '*/*'
