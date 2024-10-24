@@ -202,7 +202,7 @@
             <option value="SheinMiddleMile">SheinMiddleMile</option>
         </select>
         <div id="endpointInfo" class="endpoint-info">
-            Endpoint selecionado: https://junior-msales.workers.dev/SheinBox/upload
+            Endpoint selecionado: https://seu-worker.seu-nome.workers.dev/SheinBox/upload
         </div>
         <div class="file-input-container">
             <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
@@ -267,21 +267,27 @@
             formData.append('file', file);
 
             const selectedEndpoint = endpointSelect.value;
-            const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
+            const fullUrl = `https://junior-msales.workers.dev/${selectedEndpoint}/upload`;
 
             try {
+                console.log('Enviando para:', fullUrl);
                 const response = await fetch(fullUrl, {
                     method: 'POST',
                     headers: {
-                        'accept': '*/*'
+                        'Accept': '*/*',
+                        // Não definir Content-Type aqui, deixe o navegador definir automaticamente com o boundary correto
                     },
                     body: formData
                 });
+
+                console.log('Status da resposta:', response.status);
 
                 statusMessage.style.display = 'block';
 
                 let responseData;
                 const responseText = await response.text();
+                console.log('Resposta bruta:', responseText);
+
                 try {
                     responseData = JSON.parse(responseText);
                 } catch {
@@ -295,9 +301,10 @@
                     apiResponse.style.display = 'block';
                     apiResponseContent.textContent = JSON.stringify(responseData, null, 2);
                 } else {
-                    throw new Error('Erro ao enviar o arquivo.');
+                    throw new Error(`Erro ao enviar o arquivo. Status: ${response.status}`);
                 }
             } catch (error) {
+                console.error('Erro completo:', error);
                 statusMessage.classList.remove('status-success');
                 statusMessage.classList.add('status-error');
                 statusMessage.textContent = error.message;
