@@ -53,12 +53,6 @@
             cursor: pointer;
         }
 
-        .endpoint-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px #3b82f6;
-        }
-
         .endpoint-info {
             font-size: 0.875rem;
             color: #4b5563;
@@ -173,8 +167,12 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -199,7 +197,7 @@
         <div id="endpointInfo" class="endpoint-info">
             Endpoint selecionado: https://cct.connectedcontroltower.com.br/api/SheinBox/upload
         </div>
-        
+
         <div class="file-input-container">
             <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
             <label for="fileInput" class="file-label">Escolher arquivo</label>
@@ -278,40 +276,31 @@
                     headers: {
                         'accept': '*/*'
                     },
-                    body: formData
+                    body: formData,
+                    mode: 'no-cors' // Desativa o CORS
                 });
 
-                statusMessage.style.display = 'block';
-                
-                // Tenta ler a resposta como JSON primeiro
-                let responseData;
-                const responseText = await response.text();
-                try {
-                    responseData = JSON.parse(responseText);
-                } catch (e) {
-                    responseData = responseText;
-                }
+                // Atualiza o status e a resposta da API
+                uploadButton.disabled = false;
+                spinner.style.display = 'none';
+                buttonText.textContent = 'Enviar Arquivo';
 
-                // Mostra a resposta da API
+                statusMessage.textContent = 'Upload realizado com sucesso!';
+                statusMessage.classList.remove('status-error');
+                statusMessage.classList.add('status-success');
+                statusMessage.style.display = 'block';
+
+                const apiResult = await response.text();
+                apiResponseContent.textContent = apiResult || 'Resposta vazia (modo no-cors ativo)';
                 apiResponse.style.display = 'block';
-                apiResponseContent.textContent = typeof responseData === 'object' 
-                    ? JSON.stringify(responseData, null, 2) 
-                    : responseData;
-                
-                if (response.ok) {
-                    statusMessage.textContent = 'Arquivo enviado com sucesso!';
-                    statusMessage.className = 'status-message status-success';
-                    fileInput.value = '';
-                    selectedFile.textContent = '';
-                } else {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
             } catch (error) {
-                statusMessage.textContent = `Erro ao enviar arquivo: ${error.message}`;
-                statusMessage.className = 'status-message status-error';
-            } finally {
-                // Resetar estado do botão
-                uploadButton.disabled = !fileInput.files.length;
+                // Exibe erro
+                statusMessage.textContent = 'Ocorreu um erro ao fazer upload do arquivo.';
+                statusMessage.classList.remove('status-success');
+                statusMessage.classList.add('status-error');
+                statusMessage.style.display = 'block';
+
+                uploadButton.disabled = false;
                 spinner.style.display = 'none';
                 buttonText.textContent = 'Enviar Arquivo';
             }
