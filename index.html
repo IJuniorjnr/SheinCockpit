@@ -202,7 +202,7 @@
             <option value="SheinMiddleMile">SheinMiddleMile</option>
         </select>
         <div id="endpointInfo" class="endpoint-info">
-            Endpoint selecionado: https://seu-worker.seu-nome.workers.dev/SheinBox/upload
+            Endpoint selecionado: https://patient-snowflake-dba4.junior-msales.workers.dev/SheinBox/upload
         </div>
         <div class="file-input-container">
             <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
@@ -232,7 +232,7 @@
         const endpointInfo = document.getElementById('endpointInfo');
 
         // Altere esta URL para a URL do seu Worker do Cloudflare após criá-lo
-        const baseUrl = 'https://junior-msales.workers.dev/';
+        const baseUrl = 'https://patient-snowflake-dba4.junior-msales.workers.dev/';
 
         endpointSelect.addEventListener('change', () => {
             const selectedEndpoint = endpointSelect.value;
@@ -267,7 +267,7 @@
             formData.append('file', file);
 
             const selectedEndpoint = endpointSelect.value;
-            const fullUrl = `https://junior-msales.workers.dev/${selectedEndpoint}/upload`;
+            const fullUrl = `https://patient-snowflake-dba4.junior-msales.workers.dev/${selectedEndpoint}/upload`;
 
             try {
                 console.log('Iniciando upload...', {
