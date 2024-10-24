@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -174,22 +173,17 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-
 <body>
     <div class="upload-container">
         <div class="header">
             <h1>Upload de Arquivo - SHEIN</h1>
         </div>
+
         <select id="endpointSelect" class="endpoint-select">
             <option value="SheinBox">SheinBox</option>
             <option value="SheinFirstMile">SheinFirstMile</option>
@@ -201,24 +195,30 @@
             <option value="SheinLabelOutbound">SheinLabelOutbound</option>
             <option value="SheinMiddleMile">SheinMiddleMile</option>
         </select>
+
         <div id="endpointInfo" class="endpoint-info">
-            Endpoint selecionado: https://patient-snowflake-dba4.junior-msales.workers.dev/SheinBox/upload
+            Endpoint selecionado: https://cct.connectedcontroltower.com.br/api/SheinBox/upload
         </div>
+        
         <div class="file-input-container">
             <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
             <label for="fileInput" class="file-label">Escolher arquivo</label>
             <div id="selectedFile" class="selected-file"></div>
         </div>
+
         <button id="uploadButton" class="upload-button" disabled>
             <div id="spinner" class="spinner"></div>
             <span id="buttonText">Enviar Arquivo</span>
         </button>
+
         <div id="statusMessage" class="status-message" style="display: none;"></div>
+
         <div id="apiResponse" class="api-response" style="display: none;">
             <h2>Resposta da API:</h2>
             <pre id="apiResponseContent"></pre>
         </div>
     </div>
+
     <script>
         const fileInput = document.getElementById('fileInput');
         const selectedFile = document.getElementById('selectedFile');
@@ -231,9 +231,10 @@
         const endpointSelect = document.getElementById('endpointSelect');
         const endpointInfo = document.getElementById('endpointInfo');
 
-        // Altere esta URL para a URL do seu Worker do Cloudflare após criá-lo
-        const baseUrl = 'https://patient-snowflake-dba4.junior-msales.workers.dev/';
+        // Base URL da API
+        const baseUrl = 'https://cct.connectedcontroltower.com.br/api/';
 
+        // Atualiza a informação do endpoint quando o select muda
         endpointSelect.addEventListener('change', () => {
             const selectedEndpoint = endpointSelect.value;
             const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
@@ -257,98 +258,64 @@
             const file = fileInput.files[0];
             if (!file) return;
 
+            // Mostrar loading
             uploadButton.disabled = true;
             spinner.style.display = 'block';
             buttonText.textContent = 'Enviando...';
             statusMessage.style.display = 'none';
             apiResponse.style.display = 'none';
 
-            let retryCount = 0;
-            const maxRetries = 3;
-            const baseDelay = 1000; // 1 segundo
+            const formData = new FormData();
+            formData.append('file', file);
 
-            async function attemptUpload() {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const selectedEndpoint = endpointSelect.value;
-                const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
-
-                try {
-                    buttonText.textContent = `Enviando... Tentativa ${retryCount + 1}/${maxRetries}`;
-
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos timeout
-
-                    const response = await fetch(fullUrl, {
-                        method: 'POST',
-                        body: formData,
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        let errorMessage;
-
-                        try {
-                            const errorJson = JSON.parse(errorText);
-                            errorMessage = errorJson.error || `Erro ${response.status}: ${response.statusText}`;
-                        } catch {
-                            errorMessage = `Erro ${response.status}: ${response.statusText}`;
-                        }
-
-                        if (response.status === 504 && retryCount < maxRetries - 1) {
-                            throw new Error('timeout');
-                        }
-
-                        throw new Error(errorMessage);
-                    }
-
-                    const responseText = await response.text();
-                    let responseData;
-
-                    try {
-                        responseData = JSON.parse(responseText);
-                    } catch {
-                        responseData = responseText;
-                    }
-
-                    statusMessage.classList.remove('status-error');
-                    statusMessage.classList.add('status-success');
-                    statusMessage.textContent = 'Upload realizado com sucesso!';
-                    apiResponse.style.display = 'block';
-                    apiResponseContent.textContent = JSON.stringify(responseData, null, 2);
-
-                } catch (error) {
-                    if (error.message === 'timeout' && retryCount < maxRetries - 1) {
-                        retryCount++;
-                        const delay = baseDelay * Math.pow(2, retryCount); // exponential backoff
-                        statusMessage.style.display = 'block';
-                        statusMessage.classList.remove('status-success');
-                        statusMessage.classList.add('status-error');
-                        statusMessage.textContent = `Tentativa ${retryCount} falhou. Tentando novamente em ${delay / 1000} segundos...`;
-
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        return attemptUpload();
-                    }
-
-                    statusMessage.classList.remove('status-success');
-                    statusMessage.classList.add('status-error');
-                    statusMessage.textContent = `Erro: ${error.message}`;
-                }
-            }
+            // Pegar o endpoint selecionado
+            const selectedEndpoint = endpointSelect.value;
+            const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
 
             try {
-                await attemptUpload();
+                const response = await fetch(fullUrl, {
+                    method: 'POST',
+                    headers: {
+                        'accept': '*/*'
+                    },
+                    body: formData
+                });
+
+                statusMessage.style.display = 'block';
+                
+                // Tenta ler a resposta como JSON primeiro
+                let responseData;
+                const responseText = await response.text();
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = responseText;
+                }
+
+                // Mostra a resposta da API
+                apiResponse.style.display = 'block';
+                apiResponseContent.textContent = typeof responseData === 'object' 
+                    ? JSON.stringify(responseData, null, 2) 
+                    : responseData;
+                
+                if (response.ok) {
+                    statusMessage.textContent = 'Arquivo enviado com sucesso!';
+                    statusMessage.className = 'status-message status-success';
+                    fileInput.value = '';
+                    selectedFile.textContent = '';
+                } else {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusMessage.textContent = `Erro ao enviar arquivo: ${error.message}`;
+                statusMessage.className = 'status-message status-error';
             } finally {
-                uploadButton.disabled = false;
+                // Resetar estado do botão
+                uploadButton.disabled = !fileInput.files.length;
                 spinner.style.display = 'none';
                 buttonText.textContent = 'Enviar Arquivo';
             }
         });
     </script>
 </body>
-
 </html>
