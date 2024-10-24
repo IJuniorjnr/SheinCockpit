@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,6 +52,12 @@
             font-size: 0.875rem;
             color: #1a1a1a;
             cursor: pointer;
+        }
+
+        .endpoint-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
         }
 
         .endpoint-info {
@@ -170,19 +177,19 @@
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
         }
     </style>
 </head>
+
 <body>
     <div class="upload-container">
         <div class="header">
             <h1>Upload de Arquivo - SHEIN</h1>
-        </div>
-
-        <select id="endpointSelect" class="endpoint-select">
+        </div> <select id="endpointSelect" class="endpoint-select">
             <option value="SheinBox">SheinBox</option>
             <option value="SheinFirstMile">SheinFirstMile</option>
             <option value="SheinReceipt">SheinReceipt</option>
@@ -193,118 +200,21 @@
             <option value="SheinLabelOutbound">SheinLabelOutbound</option>
             <option value="SheinMiddleMile">SheinMiddleMile</option>
         </select>
-
-        <div id="endpointInfo" class="endpoint-info">
-            Endpoint selecionado: https://cct.connectedcontroltower.com.br/api/SheinBox/upload
-        </div>
-
-        <div class="file-input-container">
-            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
+        <div id="endpointInfo" class="endpoint-info"> Endpoint selecionado:
+            https://cct.connectedcontroltower.com.br/api/SheinBox/upload </div>
+        <div class="file-input-container"> <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
             <label for="fileInput" class="file-label">Escolher arquivo</label>
             <div id="selectedFile" class="selected-file"></div>
-        </div>
-
-        <button id="uploadButton" class="upload-button" disabled>
-            <div id="spinner" class="spinner"></div>
-            <span id="buttonText">Enviar Arquivo</span>
+        </div> <button id="uploadButton" class="upload-button" disabled>
+            <div id="spinner" class="spinner"></div> <span id="buttonText">Enviar Arquivo</span>
         </button>
-
         <div id="statusMessage" class="status-message" style="display: none;"></div>
-
         <div id="apiResponse" class="api-response" style="display: none;">
             <h2>Resposta da API:</h2>
             <pre id="apiResponseContent"></pre>
         </div>
     </div>
-
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const selectedFile = document.getElementById('selectedFile');
-        const uploadButton = document.getElementById('uploadButton');
-        const statusMessage = document.getElementById('statusMessage');
-        const spinner = document.getElementById('spinner');
-        const buttonText = document.getElementById('buttonText');
-        const apiResponse = document.getElementById('apiResponse');
-        const apiResponseContent = document.getElementById('apiResponseContent');
-        const endpointSelect = document.getElementById('endpointSelect');
-        const endpointInfo = document.getElementById('endpointInfo');
-
-        // Base URL da API
-        const baseUrl = 'https://cct.connectedcontroltower.com.br/api/';
-
-        // Atualiza a informação do endpoint quando o select muda
-        endpointSelect.addEventListener('change', () => {
-            const selectedEndpoint = endpointSelect.value;
-            const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
-            endpointInfo.textContent = `Endpoint selecionado: ${fullUrl}`;
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile.textContent = `Arquivo selecionado: ${file.name}`;
-                uploadButton.disabled = false;
-                statusMessage.style.display = 'none';
-                apiResponse.style.display = 'none';
-            } else {
-                selectedFile.textContent = '';
-                uploadButton.disabled = true;
-            }
-        });
-
-        uploadButton.addEventListener('click', async () => {
-            const file = fileInput.files[0];
-            if (!file) return;
-
-            // Mostrar loading
-            uploadButton.disabled = true;
-            spinner.style.display = 'block';
-            buttonText.textContent = 'Enviando...';
-            statusMessage.style.display = 'none';
-            apiResponse.style.display = 'none';
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // Pegar o endpoint selecionado
-            const selectedEndpoint = endpointSelect.value;
-            const fullUrl = `${baseUrl}${selectedEndpoint}/upload`;
-
-            try {
-                const response = await fetch(fullUrl, {
-                    method: 'POST',
-                    headers: {
-                        'accept': '*/*'
-                    },
-                    body: formData,
-                    mode: 'no-cors' // Desativa o CORS
-                });
-
-                // Atualiza o status e a resposta da API
-                uploadButton.disabled = false;
-                spinner.style.display = 'none';
-                buttonText.textContent = 'Enviar Arquivo';
-
-                statusMessage.textContent = 'Upload realizado com sucesso!';
-                statusMessage.classList.remove('status-error');
-                statusMessage.classList.add('status-success');
-                statusMessage.style.display = 'block';
-
-                const apiResult = await response.text();
-                apiResponseContent.textContent = apiResult || 'Resposta vazia (modo no-cors ativo)';
-                apiResponse.style.display = 'block';
-            } catch (error) {
-                // Exibe erro
-                statusMessage.textContent = 'Ocorreu um erro ao fazer upload do arquivo.';
-                statusMessage.classList.remove('status-success');
-                statusMessage.classList.add('status-error');
-                statusMessage.style.display = 'block';
-
-                uploadButton.disabled = false;
-                spinner.style.display = 'none';
-                buttonText.textContent = 'Enviar Arquivo';
-            }
-        });
-    </script>
+    <script>         const fileInput = document.getElementById('fileInput'); const selectedFile = document.getElementById('selectedFile'); const uploadButton = document.getElementById('uploadButton'); const statusMessage = document.getElementById('statusMessage'); const spinner = document.getElementById('spinner'); const buttonText = document.getElementById('buttonText'); const apiResponse = document.getElementById('apiResponse'); const apiResponseContent = document.getElementById('apiResponseContent'); const endpointSelect = document.getElementById('endpointSelect'); const endpointInfo = document.getElementById('endpointInfo');          // Base URL da API         const baseUrl = 'https://cct.connectedcontroltower.com.br/api/';          // Atualiza a informação do endpoint quando o select muda         endpointSelect.addEventListener('change', () => {             const selectedEndpoint = endpointSelect.value;             const fullUrl = ${baseUrl}${selectedEndpoint}/upload;             endpointInfo.textContent = Endpoint selecionado: ${fullUrl};         });          fileInput.addEventListener('change', (e) => {             const file = e.target.files[0];             if (file) {                 selectedFile.textContent = Arquivo selecionado: ${file.name};                 uploadButton.disabled = false;                 statusMessage.style.display = 'none';                 apiResponse.style.display = 'none';             } else {                 selectedFile.textContent = '';                 uploadButton.disabled = true;             }         });          uploadButton.addEventListener('click', async () => {             const file = fileInput.files[0];             if (!file) return;              // Mostrar loading             uploadButton.disabled = true;             spinner.style.display = 'block';             buttonText.textContent = 'Enviando...';             statusMessage.style.display = 'none';             apiResponse.style.display = 'none';              const formData = new FormData();             formData.append('file', file);              // Pegar o endpoint selecionado             const selectedEndpoint = endpointSelect.value;             const fullUrl = ${baseUrl}${selectedEndpoint}/upload;              try {                 const response = await fetch(fullUrl, {                     method: 'POST',                     headers: {                         'accept': '*/*'                     },                     body: formData                 });                  statusMessage.style.display = 'block';                                  // Tenta ler a resposta como JSON primeiro                 let responseData;                 const responseText = await response.text();                 try {                     responseData = JSON.parse(responseText);                 } catch (e) {                     responseData = responseText;                 }                  // Mostra a resposta da API                 apiResponse.style.display = 'block';                 apiResponseContent.textContent = typeof responseData === 'object'                      ? JSON.stringify(responseData, null, 2)                      : responseData;                                  if (response.ok) {                     statusMessage.textContent = 'Arquivo enviado com sucesso!';                     statusMessage.className = 'status-message status-success';                     fileInput.value = '';                     selectedFile.textContent = '';                 } else {                     throw new Error(Error: ${response.statusText});                 }             } catch (error) {                 statusMessage.textContent = Erro ao enviar arquivo: ${error.message};                 statusMessage.className = 'status-message status-error';             } finally {                 // Resetar estado do botão                 uploadButton.disabled = !fileInput.files.length;                 spinner.style.display = 'none';                 buttonText.textContent = 'Enviar Arquivo';             }         });     </script>
 </body>
+
 </html>
