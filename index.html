@@ -202,7 +202,7 @@
             <option value="SheinMiddleMile">SheinMiddleMile</option>
         </select>
         <div id="endpointInfo" class="endpoint-info">
-            Endpoint selecionado: https://cct.connectedcontroltower.com.br/api/SheinBox/upload
+            Endpoint selecionado: https://seu-worker.seu-nome.workers.dev/SheinBox/upload
         </div>
         <div class="file-input-container">
             <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
@@ -231,7 +231,8 @@
         const endpointSelect = document.getElementById('endpointSelect');
         const endpointInfo = document.getElementById('endpointInfo');
 
-        const baseUrl = 'https://cct.connectedcontroltower.com.br/api/';
+        // Altere esta URL para a URL do seu Worker do Cloudflare após criá-lo
+        const baseUrl = 'https://junior-msales.workers.dev/';
 
         endpointSelect.addEventListener('change', () => {
             const selectedEndpoint = endpointSelect.value;
